@@ -201,9 +201,47 @@ label loadDatabase:
                                 SkillsDatabase[additionLocation].removesStance[0] = each
                             else:
                                 SkillsDatabase[additionLocation].removesStance.append(each)
+                    
+                    #CODEMOD: Override reaction fallback skills in loaded skill
+                    if "all" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.allReaction = currentData["reactionFallback"]["all"]
+                    
+                    if "hitWith" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.hitWith = currentData["reactionFallback"]["hitWith"]
+
+                    if "escape" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.escape = currentData["reactionFallback"]["escape"]
+                    
+                    if "playerRecoil" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.playerRecoil = currentData["reactionFallback"]["playerRecoil"]
+                    
+                    if "onPlayerEdge" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.onPlayerEdge = currentData["reactionFallback"]["onPlayerEdge"]
+                    
+                    if "autoCounter" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.autoCounter = currentData["reactionFallback"]["autoCounter"]
+
+                    if "autoCounterTag" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.autoCounterTag = currentData["reactionFallback"]["autoCounterTag"]
+
+                    if "autoCounterFetish" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.autoCounterFetish = currentData["reactionFallback"]["autoCounterFetish"]
 
 
                 if additionLocation == None:
+                    #CODEMOD: Create object to create delegated reactions for new skill
+                    newRactionDelegations = currentData.get("reactionFallback", {})
+
+                    newReactions = ReactionHandler(
+                        newRactionDelegations.get("all", ""),
+                        newRactionDelegations.get("hitWith", ""),
+                        newRactionDelegations.get("escape", ""),
+                        newRactionDelegations.get("playerRecoil", ""),
+                        newRactionDelegations.get("onPlayerEdge", ""),
+                        newRactionDelegations.get("autoCounter", ""),
+                        newRactionDelegations.get("autoCounterTag", ""),
+                        newRactionDelegations.get("autoCounterFetish", ""))
+
                     blankSkill = Skill(
                     currentData["name"],
                     currentData["cost"],
@@ -265,7 +303,8 @@ label loadDatabase:
                     flatSFScaling,
                     totalSFScaling,
                     unusableSets,
-                    currentData.get("stanceConditions", []))
+                    currentData.get("stanceConditions", []),
+                    reactions=newReactions)
 
                     if validateJsons and not loadingDatabaseType:
                         validate_skill_arrays = [

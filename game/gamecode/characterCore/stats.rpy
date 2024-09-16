@@ -947,6 +947,40 @@ init python:
 
         return False
 
+    #CODEMOD: New Class introduced to store which skill to use as a fallback when searching a monster's combatdialogue for reactions. Does not currently handle reactions for new sstances.
+    class ReactionHandler:
+
+        def __init__(self, all="", hitWith="", escape="", playerRecoil="", onPlayerEdge="", autoCounter="", autoCounterTag="", autoCounterFetish=""):
+            self.all = all
+            self.hitWith = hitWith
+            self.escape = escape
+            self.playerRecoil = playerRecoil
+            self.onPlayerEdge = onPlayerEdge
+            self.autoCounter = autoCounter
+            self.autoCounterTag = autoCounterTag
+            self.autoCounterFetish = autoCounterFetish
+        
+        #Gets the delegate specfied for a certain linetrigger. If a skill has not been defined for a specifc linetrigger, uses the skill set in "all" instead
+        def getFallbackSkill(self, reactiontype, skillDatabase):
+
+            def checkSkill(reactiontoCheck, databaseToSearch):
+                if hasattr(self, reactiontoCheck):
+                    skillNameToCheck = getattr(self, reactiontoCheck)
+
+                    if skillNameToCheck:
+                        skillIndex = getFromName(skillNameToCheck, databaseToSearch)
+
+                        if skillIndex:
+                            return databaseToSearch[skillIndex]
+                return None
+
+            returnSkill = checkSkill(reactiontype, skillDatabase)
+
+            if returnSkill is None:
+                returnSkill = checkSkill("all", skillDatabase)
+            
+            return returnSkill
+                    
     class Skill:
         def __init__(self, name="blank", costDisplay="0",  costType="ep", skillType="attack", statType="", skillTags=[], fetishTags=[],
                         startsStance=[""], requiresStance="", unusableIfStance="", requiresTargetStance=[], unusableIfTarget=[], removesStance=[""], requiresStatusEffect="", requiresStatusPotency=0, unusableIfStatusEffect=[], unusableIfStatusPotency=[], requiresStatusEffectSelf="", requiresStatusPotencySelf=0, unusableIfStatusEffectSelf=[],
@@ -955,7 +989,7 @@ init python:
                         targetType="single",  accuracy=0, initiative=0,
                         statusEffect="none", statusChance=0, statusDuration=0, statusPotency=0, statusResistedBy="", statusText= "",
                         descrips="", outcome="", miss="", statusOutcome="", statusMiss="", restraintStruggle=[""],  restraintStruggleCharmed=[""], restraintEscaped=[""], restraintEscapedFail=[""], restraintOnLoss=[""],
-                        learningCost=0, requiredStat=0, requiredLevel=1, statusEffectScaling=100, scalesWithStatusScale="", flatSFFlatScaling=0, flatSFPercentScaling=0, totalSFPercentScaling=0, unusableIfTargetHasTheseSets=[], stanceConditions=[], cost=0, isSkill="True"):
+                        learningCost=0, requiredStat=0, requiredLevel=1, statusEffectScaling=100, scalesWithStatusScale="", flatSFFlatScaling=0, flatSFPercentScaling=0, totalSFPercentScaling=0, unusableIfTargetHasTheseSets=[], stanceConditions=[], cost=0, isSkill="True", reactions=ReactionHandler()):
             self.name = name
             self.costDisplay = costDisplay
             self.cost = int(costDisplay) #energyCost
@@ -1025,6 +1059,9 @@ init python:
 
             self.unusableIfTargetHasTheseSets =unusableIfTargetHasTheseSets
             self.stanceConditions = stanceConditions
+
+            #CODEMOD: Store copy of ReactionHandler in every skill to be used in combatFunctions.rpy
+            self.reactions = reactions
 
 
         def __ne__(self, other):
