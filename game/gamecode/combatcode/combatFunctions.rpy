@@ -505,6 +505,17 @@ init python:
     def getDamageEstimate(player, skill):
 
         damageEstimate = skill.power + 1
+
+        for each in skill.skillTags:
+            if each == "Holy" and skill.statType != "HeadPat":
+                virilityScale = getVirility(player)*0.01
+
+                if virilityScale > 1: 
+                    virilityScale -= 1
+                    damageEstimate *= 1 + virilityScale*0.5
+                else:
+                    damageEstimate *= virilityScale
+
         allureFlatScaling = 0.05
         allureFlatPercentBoost = 0
         for perk in player.perks:
@@ -552,9 +563,7 @@ init python:
         else:
             relatedStat = 0
         damageEstimate += (skill.power*((player.stats.Allure-5)*0.002 + allureFlatPercentBoost)) + ((player.stats.Allure-5)*allureFlatScaling) + flatDamageBonus
-        for each in skill.skillTags:
-            if each == "Holy" and skill.statType != "HeadPat":
-                damageEstimate *= getVirility(player)*0.01
+        
 
 
         damageEstimate = math.floor(damageEstimate)
@@ -804,6 +813,8 @@ label combatActionTurn:
                 if attacker.statusEffects.charmed.duration > 0:
                     $ charmMod = 0.5
                 $ attacker.statusEffects.restrained.duration -= getRestrainStruggle(attacker, restraintEscapeBoost, charmMod, 0)*0.1
+                if attacker.statusEffects.restrained.duration <= 1:
+                    $ attacker.statusEffects.restrained.duration = 1
 
             if attacker.species == "Player":
                 if GetParalFlatEnergyChange(player) > 0 and skillChoice.name != "Wait" and skillChoice.name != "Defend" and skillChoice.name != "Struggle":
@@ -2179,11 +2190,18 @@ label combatFunctions:
                     if lineFound == 0 and LastResortLine != "":
                         display += LastResortLine
                 if ignoreOrgasm == 0 and edging == 0:
-                    if lineFound == 1 and HideOrgasmLine == 0 and theTarget.species == "Player":
-                        display += " " + theTarget.name + " loses [SpiritLost] spirit.\n"
-                    else:
+                    useFillerLineAhe = 1
+                    if lineFound == 1 or display != "": #added the display check to stop the game from using the default cries out with ecstasy line in odd cases, like with the livewire's heft move while you're fucking another livewire, cause somehow lineFound was getting set back to 0, and making it lineOFound didnt fix it
+                        if theTarget.species == "Player":
+                            useFillerLineAhe = 0
+                        if HideOrgasmLine == 0:
+                            useFillerLineAhe = 0  
+
+                    if useFillerLineAhe == 1:
                         the = theForGeneric(theTarget)
-                        display += " " + the + theTarget.name + " cries out with ecstasy as " + getHeOrShe(theTarget) + " orgasms and loses " + str(spiritLost) +" spirit!\n"
+                        display += " " + the + theTarget.name +  " cries out with ecstasy as " + getHeOrShe(theTarget) + " orgasms and loses " + str(spiritLost) +" spirit!\n"
+                    else:
+                        display += " " + theTarget.name + " loses [SpiritLost] spirit.\n"
                 elif edging == 1:
                     passChance =  10 + theTarget.stats.Willpower + theTarget.stats.Power + theTarget.stats.Luck*0.5 + theTarget.resistancesStatusEffects.Stun
                     randomRoll = renpy.random.randint(0, 100)
@@ -2523,26 +2541,35 @@ label combatFunctions:
                         if defender.statusEffects.hasThisStatusEffect("Defend") == True and move.scalesWithStatusScale == "Defend":
                             finalDamage += 1*move.flatSFFlatScaling
                             finalDamage += move.power*((1*move.flatSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Stun") == True and move.scalesWithStatusScale == "Stun":
+                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1) # if more additions are done after this, these need to get moved up
+                        elif defender.statusEffects.hasThisStatusEffect("Stun") == True and move.scalesWithStatusScale == "Stun":
                             finalDamage += defender.statusEffects.stunned.potency*move.flatSFFlatScaling
                             finalDamage += move.power*((defender.statusEffects.stunned.potency*move.flatSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Charm") == True and move.scalesWithStatusScale == "Charm":
+                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1)
+                        elif defender.statusEffects.hasThisStatusEffect("Charm") == True and move.scalesWithStatusScale == "Charm":
                             finalDamage += defender.statusEffects.charmed.potency*move.flatSFFlatScaling
                             finalDamage += move.power*((defender.statusEffects.charmed.potency*move.flatSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Aphrodisiac") == True and move.scalesWithStatusScale == "Aphrodisiac":
+                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1)
+                        elif defender.statusEffects.hasThisStatusEffect("Restrain") == True and move.scalesWithStatusScale == "Restrain":
+                            finalDamage += 1*move.flatSFFlatScaling
+                            finalDamage += move.power*((1*move.flatSFPercentScaling)*0.01+1)
+                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1)
+                        elif defender.statusEffects.hasThisStatusEffect("Aphrodisiac") == True and move.scalesWithStatusScale == "Aphrodisiac":
                             finalDamage += defender.statusEffects.aphrodisiac.potency*move.flatSFFlatScaling
                             finalDamage += move.power*((defender.statusEffects.aphrodisiac.potency*move.flatSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffectPotency("Sleep", 0) == True and move.scalesWithStatusScale == "Sleep":
+                            finalDamage = finalDamage*((defender.statusEffects.aphrodisiac.potency*move.totalSFPercentScaling)*0.01+1)
+                        elif defender.statusEffects.hasThisStatusEffectPotency("Sleep", 0) == True and move.scalesWithStatusScale == "Sleep":
                             finalDamage += defender.statusEffects.sleep.potency*move.flatSFFlatScaling
                             finalDamage += move.power*((defender.statusEffects.sleep.potency*move.flatSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Trance") == True and move.scalesWithStatusScale == "Trance":
+                            finalDamage = finalDamage*((defender.statusEffects.sleep.potency*move.totalSFPercentScaling)*0.01+1)
+                        elif defender.statusEffects.hasThisStatusEffect("Trance") == True and move.scalesWithStatusScale == "Trance":
                             finalDamage += defender.statusEffects.trance.potency*move.flatSFFlatScaling
                             finalDamage += move.power*((defender.statusEffects.trance.potency*move.flatSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Paralysis") == True and move.scalesWithStatusScale == "Paralysis":
+                            finalDamage = finalDamage*((defender.statusEffects.trance.potency*move.totalSFPercentScaling)*0.01+1)
+                        elif defender.statusEffects.hasThisStatusEffect("Paralysis") == True and move.scalesWithStatusScale == "Paralysis":
                             finalDamage += defender.statusEffects.paralysis.potency*move.flatSFFlatScaling
                             finalDamage += move.power*((defender.statusEffects.paralysis.potency*move.flatSFPercentScaling)*0.01+1)
-
-
+                            finalDamage = finalDamage*((defender.statusEffects.paralysis.potency*move.totalSFPercentScaling)*0.01+1)
 
                     fetishMod = 1
                     for each in move.fetishTags:
@@ -2641,7 +2668,7 @@ label combatFunctions:
                             p += 1
 
 
-                    critChance -=  getCritReduction(theTarget)
+                    critChance +=  getCritReduction(theTarget)
 
                     critRoll = renpy.random.randint(0,100)
 
@@ -2677,25 +2704,7 @@ label combatFunctions:
                         elif theTarget.statusEffects.defend.potency == 2:
                             finalDamage *= 0.50-DefendBonus
                         elif theTarget.statusEffects.defend.potency == 1:
-                            finalDamage *= 0.75-DefendBonus
-
-                    if move.scalesWithStatusScale != "":
-                        if defender.statusEffects.hasThisStatusEffect("Defend") == True and move.scalesWithStatusScale == "Defend":
-                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Stun") == True and move.scalesWithStatusScale == "Stun":
-                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Charm") == True and move.scalesWithStatusScale == "Charm":
-                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Restrain") == True and move.scalesWithStatusScale == "Restrain":
-                            finalDamage = finalDamage*((1*move.totalSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Aphrodisiac") == True and move.scalesWithStatusScale == "Aphrodisiac":
-                            finalDamage = finalDamage*((defender.statusEffects.aphrodisiac.potency*move.totalSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffectPotency("Sleep", 0) == True and move.scalesWithStatusScale == "Sleep":
-                            finalDamage = finalDamage*((defender.statusEffects.sleep.potency*move.totalSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Trance") == True and move.scalesWithStatusScale == "Trance":
-                            finalDamage = finalDamage*((defender.statusEffects.trance.potency*move.totalSFPercentScaling)*0.01+1)
-                        if defender.statusEffects.hasThisStatusEffect("Paralysis") == True and move.scalesWithStatusScale == "Paralysis":
-                            finalDamage = finalDamage*((defender.statusEffects.paralysis.potency*move.totalSFPercentScaling)*0.01+1)
+                            finalDamage *= 0.75-DefendBonus 
 
                     if attacker.statusEffects.restrained.duration > 0:
                         finalDamage = finalDamage*0.5
@@ -2976,36 +2985,40 @@ label combatFunctions:
                 if move.statusEffect == "Damage":
                     relatedStat = applier.stats.getStat(move.statType)
                     canGetBuff = 1
-                    for each in user.statusEffects.tempAtk:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempAtk:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         user.statusEffects.tempAtk.append(StatusEffect(statusEffectDuration(move.statusDuration, applier), move.statusPotency + (relatedStat*scaling)*flipper, move.statusText))
                 elif move.statusEffect == "Defence":
                     relatedStat = applier.stats.getStat(move.statType)
                     canGetBuff = 1
-                    for each in user.statusEffects.tempDefence:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempDefence:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         user.statusEffects.tempDefence.append(StatusEffect(statusEffectDuration(move.statusDuration, applier), move.statusPotency + (relatedStat*scaling)*flipper, move.statusText))
                 elif move.statusEffect == "Crit":
                     relatedStat = applier.stats.getStat(move.statType)
                     canGetBuff = 1
-                    for each in user.statusEffects.tempCrit:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempCrit:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         user.statusEffects.tempCrit.append(StatusEffect(statusEffectDuration(move.statusDuration, applier), move.statusPotency + (relatedStat*scaling)*flipper, move.statusText))
                 elif move.statusEffect == "Power" or move.statusEffect == "%Power":
                     canGetBuff = 1
-                    for each in user.statusEffects.tempPower:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempPower:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         relatedStat = applier.stats.getStat(move.statType)
                         potentChange = move.statusPotency + (relatedStat*scaling)*flipper
@@ -3018,10 +3031,11 @@ label combatFunctions:
                         user.stats.Power += potentChange
                 elif move.statusEffect == "Technique"  or move.statusEffect == "%Technique":
                     canGetBuff = 1
-                    for each in user.statusEffects.tempTech:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempTech:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         relatedStat = applier.stats.getStat(move.statType)
                         potentChange = move.statusPotency + (relatedStat*scaling)*flipper
@@ -3033,10 +3047,11 @@ label combatFunctions:
                         user.stats.Tech += potentChange
                 elif move.statusEffect == "Intelligence" or move.statusEffect == "%Intelligence":
                     canGetBuff = 1
-                    for each in user.statusEffects.tempInt:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempInt:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         relatedStat = applier.stats.getStat(move.statType)
                         potentChange = move.statusPotency + (relatedStat*scaling)*flipper
@@ -3048,10 +3063,11 @@ label combatFunctions:
                         user.stats.Int += potentChange
                 elif move.statusEffect == "Willpower" or move.statusEffect == "%Willpower":
                     canGetBuff = 1
-                    for each in user.statusEffects.tempWillpower:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempWillpower:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         relatedStat = applier.stats.getStat(move.statType)
                         potentChange = move.statusPotency + (relatedStat*scaling)*flipper
@@ -3064,10 +3080,11 @@ label combatFunctions:
                         user.stats.Willpower += potentChange
                 elif move.statusEffect == "Allure" or move.statusEffect == "%Allure":
                     canGetBuff = 1
-                    for each in user.statusEffects.tempAllure:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempAllure:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         relatedStat = applier.stats.getStat(move.statType)
                         potentChange = move.statusPotency + (relatedStat*scaling)*flipper
@@ -3080,10 +3097,11 @@ label combatFunctions:
                         user.stats.Allure += potentChange
                 elif move.statusEffect == "Luck" or move.statusEffect == "%Luck":
                     canGetBuff = 1
-                    for each in user.statusEffects.tempLuck:
-                        if each.skillText == move.statusText:
-                            each.duration = statusEffectDuration(move.statusDuration, applier)
-                            canGetBuff = 0
+                    if move.statusStacks == 0: 
+                        for each in user.statusEffects.tempLuck:
+                            if each.skillText == move.statusText:
+                                each.duration = statusEffectDuration(move.statusDuration, applier)
+                                canGetBuff = 0
                     if canGetBuff == 1:
                         relatedStat = applier.stats.getStat(move.statType)
                         potentChange = move.statusPotency + (relatedStat*scaling)*flipper

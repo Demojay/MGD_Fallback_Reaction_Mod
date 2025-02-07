@@ -126,6 +126,7 @@ label loadDatabase:
                 powerSFScaling = int(currentData.get("flatDamageSF-FlatScaling", 0))
                 flatSFScaling = float(currentData.get("flatDamageSF-PercentScaling", 0.0))
                 totalSFScaling = int(currentData.get("totalDamageSF-PercentScaling", 0))
+                statusStacks = int(currentData.get("statusStacks", 0))
 
                 try:
                     unusableSets = []
@@ -308,6 +309,7 @@ label loadDatabase:
                     totalSFScaling,
                     unusableSets,
                     currentData.get("stanceConditions", []),
+                    statusStacks,
                     reactions=newReactions)
 
                     if validateJsons and not loadingDatabaseType:
@@ -675,6 +677,10 @@ label loadDatabase:
                     blankDia.move = [each["move"]]
                 else:
                     blankDia.move = each["move"]
+                try:
+                    blankDia.triggersOnce = each["triggersOnce"]
+                except:
+                    pass
 
                 blankDia.theText = each["theText"]
 
@@ -1713,11 +1719,15 @@ label loadDatabase:
                     if each.name == eachNew.name:
                         player.skillList[i] = copy.deepcopy(each)
 
+                        try:
+                            eachNew.statusStacks = eachNew.statusStacks
+                        except:
+                            eachNew.statusStacks = 0
 
                         try:
                             eachNew.scalesWithStatusScale = eachNew.scalesWithStatusScale
                         except:
-                            eachNew.scalesWithStatusScale = 100
+                            eachNew.scalesWithStatusScale = ""                            
                         try:
                             eachNew.scalesWithStatusEffect = eachNew.scalesWithStatusEffect
                         except:
@@ -1889,7 +1899,7 @@ label loadDatabase:
             if validateJsons and not loadingDatabaseType:
                 persistent.validatorAtReload = False
                 validator.writeToFiles()
-        if not renpy.android:
+        if not renpy.android and not renpy.emscripten:
             if countModList(genericCount=True) > 0:
                 persistent.modsArePresent = True
             else:
@@ -1902,13 +1912,8 @@ label loadDatabase:
         blankSpeaker = None
         blankGroup = None
         needToUpdate = 0
-        #if sys.version_info[0] == 2:
-            # Python 2
-        #    benchtime = time.clock()
-        #else:
-            # Python 3
-        #    benchtime = time.perf_counter()
-        #print("Section Name Here:", benchtime - benchstart)
+        # benchtime = time.perf_counter()
+        # print("Section Name Here:", benchtime - benchstart)
     if persistent.genModData == True:
             $ persistent.genModData = False
             $ loadingDatabaseType = 1

@@ -319,39 +319,39 @@ init python:
 
             if Name == "Damage":
                 for each in self.tempAtk:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Defence":
                 for each in self.tempDefence:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Power":
                 for each in self.tempPower:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Technique":
                 for each in self.tempTech:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Intelligence":
                 for each in self.tempInt:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Willpower":
                 for each in self.tempWillpower:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Allure":
                 for each in self.tempAllure:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Luck":
                 for each in self.tempLuck:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
             if Name == "Crit":
                 for each in self.tempCrit:
-                    if each.duration > 0 and inverse*each.potency >= Potency:
+                    if each.duration > 0 and inverse*each.potency >= inverse*Potency:
                         return True
 
             return False
@@ -1012,7 +1012,7 @@ init python:
                         targetType="single",  accuracy=0, initiative=0,
                         statusEffect="none", statusChance=0, statusDuration=0, statusPotency=0, statusResistedBy="", statusText= "",
                         descrips="", outcome="", miss="", statusOutcome="", statusMiss="", restraintStruggle=[""],  restraintStruggleCharmed=[""], restraintEscaped=[""], restraintEscapedFail=[""], restraintOnLoss=[""],
-                        learningCost=0, requiredStat=0, requiredLevel=1, statusEffectScaling=100, scalesWithStatusScale="", flatSFFlatScaling=0, flatSFPercentScaling=0, totalSFPercentScaling=0, unusableIfTargetHasTheseSets=[], stanceConditions=[], cost=0, isSkill="True", reactions=ReactionHandler()):
+                        learningCost=0, requiredStat=0, requiredLevel=1, statusEffectScaling=100, scalesWithStatusScale="", flatSFFlatScaling=0, flatSFPercentScaling=0, totalSFPercentScaling=0, unusableIfTargetHasTheseSets=[], stanceConditions=[], statusStacks=0, cost=0, isSkill="True", reactions=ReactionHandler()):
             self.name = name
             self.costDisplay = costDisplay
             self.cost = int(costDisplay) #energyCost
@@ -1080,6 +1080,8 @@ init python:
             self.flatSFPercentScaling = flatSFPercentScaling
             self.totalSFPercentScaling = totalSFPercentScaling
 
+            self.statusStacks = statusStacks
+
             self.unusableIfTargetHasTheseSets =unusableIfTargetHasTheseSets
             self.stanceConditions = stanceConditions
 
@@ -1146,6 +1148,7 @@ init python:
             equal = self.Compare(self.flatSFPercentScaling, other.flatSFPercentScaling, equal)
             equal = self.Compare(self.totalSFPercentScaling, other.totalSFPercentScaling, equal)
             equal = self.CompareArray(self.unusableIfTargetHasTheseSets, other.unusableIfTargetHasTheseSets, equal)
+            equal = self.Compare(self.statusStacks, other.statusStacks, equal)
 
             if equal == 0:
                 return True
