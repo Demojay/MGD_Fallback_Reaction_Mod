@@ -1762,19 +1762,45 @@ label setDefender(defender):
     $ theTarget = theForGeneric(defender)
     return
 
-
+#CODEMOD: Allows for the game to use a delegate check when checking for counter reactions
 label CounterTalk(defender, attacker, skillChoice, altName):
     $ counterArray = []
     python:
+        def checkTags(tags, dialogue):
+            result = False
+            for sTag in tags:
+                checkTag = copy.deepcopy(sTag)
+                for possibleOptions in dialogue.move:
+                    if checkTag == possibleOptions:
+                        result = True
+                    elif checkTag == "Penetration":
+                        for stanceCheck in attacker.combatStance:
+                            if stanceCheck.Stance == "Sex":
+                                checkTag = "Sex"
+                            elif stanceCheck.Stance == "Anal":
+                                checkTag = "Ass"
+                        if checkTag == possibleOptions:
+                            result = True
+            return result
+
         if attacker.species == "Player":
+            reactions = ReactionTextHolder()
             canGo = 0
             for each in defender.combatDialogue:
                 if canGo == 0:
                     allowCheck = 0
+                    allowCheckAlt = 0
+                    counterSkill = skillChoice.reactions.getFallbackSkill("autoCounter", SkillsDatabase)
+                    counterTagSkill = skillChoice.reactions.getFallbackSkill("autoCounterTag", SkillsDatabase)
+                    counterFetishSkill = skillChoice.reactions.getFallbackSkill("autoCounterFetish", SkillsDatabase)
+
                     if each.lineTrigger == "AutoCounter" or each.lineTrigger == "AutoCounterSkill":
                         for possibleOptions in each.move:
                             if skillChoice.name == possibleOptions or altName == possibleOptions:
                                 allowCheck = 1
+                            
+                            if counterSkill and counterSkill.name == possibleOptions:
+                                allowCheckAlt = 1
 
                     if each.lineTrigger == "AutoCounterSkillTag":
                         for sTag in skillChoice.skillTags:
@@ -1790,6 +1816,10 @@ label CounterTalk(defender, attacker, skillChoice, altName):
                                             checkTag = "Ass"
                                     if checkTag == possibleOptions:
                                         allowCheck = 1
+                        
+                        #CODEMOD: Functionality for fallback dialogue
+                        if counterTagSkill and checkTags(counterTagSkill.skillTags, each):
+                            allowCheckAlt = 1
 
                     if each.lineTrigger == "AutoCounterSkillFetish":
                         for sTag in skillChoice.fetishTags:
@@ -1805,9 +1835,19 @@ label CounterTalk(defender, attacker, skillChoice, altName):
                                             checkTag = "Ass"
                                     if checkTag == possibleOptions:
                                         allowCheck = 1
+                        
+                        #CODEMOD: Functionality for fallback dialogue
+                        if counterFetishSkill and checkTags(counterFetishSkill.fetishTags, each):
+                            allowCheckAlt = 1
 
+                    #CODEMOD: Functionality for fallback dialogue
                     if allowCheck == 1:
-                            counterArray.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)])
+                        reactions.defaultText.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)])
+                    
+                    #CODEMOD: Functionality for fallback dialogue
+                    if allowCheckAlt == 1:
+                        reactions.altText.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)])
+
 
                     if each.lineTrigger == "OffenceCounter":
                         counterit = 1
@@ -1830,12 +1870,17 @@ label CounterTalk(defender, attacker, skillChoice, altName):
                             counterit = 0
                         if counterit == 1:
                             counterArray.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)])
+            
+            counterArray.extend(reactions.getReactions())
+            reactions.clear()
 
     return
 
 
 label onRecoilTalk(defender, attacker, skillChoice):
     python:
+        reactions = ReactionTextHolder()
+        recoilFallbackSkill = skillChoice.reactions.getFallbackSkill("playerRecoil", SkillsDatabase)
         if attacker.species == "Player" and recoilHit > 0:
             if defender.statusEffects.sleep.potency != -99:
                 for each in defender.combatDialogue:
@@ -1854,13 +1899,36 @@ label onRecoilTalk(defender, attacker, skillChoice):
                                 else:
                                     canGo = 1
                     if canGo == 1:
-                        display += each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " "
+                        reactions.defaultText.append(ach.theText[renpy.random.randint(-1, len(each.theText)-1)] + " ")
+                    
+                    #CODEMOD: Functionality for fallback dialogue
+                    if recoilFallbackSkill:
+                        canGoAlt = 0
+                        if (each.lineTrigger == "PlayerRecoil" or each.lineTrigger == "PlayerRecoilA") and canGoAlt == 0:
+                            for possibleOptions in each.move:
+                                if skillChoice.name == possibleOptions and canGoAlt == 0:
+                                    if skillChoice.requiresStance == "Penetration":
+                                        for stanceChek in defender.combatStance:
+                                            if stanceChek.Stance == "Sex":
+                                                if each.lineTrigger == "PlayerRecoil":
+                                                    canGoAlt = 1
+                                            elif stanceChek.Stance == "Anal":
+                                                if each.lineTrigger == "PlayerRecoilA":
+                                                    canGoAlt = 1
+                                    else:
+                                        canGoAlt = 1
+                        if canGoAlt == 1:
+                            reactions.altText.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " ")
+            display += "".join(reactions.getReactions())
+            reactions.clear()
 
     return
 
 
 label onHitTalk(defender, attacker, skillChoice):
     python:
+        reactions = ReactionTextHolder()
+        hitFallbackSkill = skillChoice.reactions.getFallbackSkill("hitWith", SkillsDatabase)
         if attacker.species == "Player":
             if defender.statusEffects.sleep.potency != -99:
                 canGo = 0
@@ -1907,7 +1975,36 @@ label onHitTalk(defender, attacker, skillChoice):
                                             canGo = 1
 
                             if canGo == 1:
-                                display += each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " "
+                                reactions.defaultText.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " ")
+                                
+                            #CODEMOD: Functionality for fallback dialogue
+                            if hitFallbackSkill:
+                                canGoAlt = 0
+                                if hitFallbackSkill.statusEffect == "TargetStances" or hitFallbackSkill.statusEffect == "Escape" or hitFallbackSkill.targetType == "Escape":
+                                    for possibleOptions in each.move:
+                                        if possibleOptions == "" or possibleOptions == hitFallbackSkill.name:
+                                            if each.lineTrigger == "Escape" and justEscapedStance == 2:
+                                                canGoAlt = 1
+
+
+                                if each.lineTrigger == "HitWith" or each.lineTrigger == "HitWithA" and canGoAlt == 0:
+                                    for possibleOptions in each.move:
+                                        if hitFallbackSkill.name == possibleOptions and canGoAlt == 0:
+                                            if hitFallbackSkill.requiresStance == "Penetration":
+                                                for stanceChek in defender.combatStance:
+                                                    if stanceChek.Stance == "Sex":
+                                                        if each.lineTrigger == "HitWith":
+                                                            canGoAlt = 1
+                                                    elif stanceChek.Stance == "Anal":
+                                                        if each.lineTrigger == "HitWithA":
+                                                            canGoAlt = 1
+                                            else:
+                                                canGoAlt = 1
+
+                                if canGoAlt == 1:
+                                    reactions.altText.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " ")
+                        display += "".join(reactions.getReactions())
+                        reactions.clear()
 
     return
 
@@ -1916,6 +2013,8 @@ label onHitPreTalk(defender, attacker, skillChoice):
     $ premonDisplay = display
     $ display = ""
     python:
+        reactions = ReactionTextHolder()
+        hitPreFallbackSkill = skillChoice.reactions.getFallbackSkill("hitWithPre", SkillsDatabase)
         if attacker.species == "Player":
             if defender.statusEffects.sleep.potency != -99:
                 for each in defender.combatDialogue:
@@ -1933,7 +2032,27 @@ label onHitPreTalk(defender, attacker, skillChoice):
                                     canGo = 1
 
                     if canGo == 1:
-                        display += each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " "
+                        reations.defaultText.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " ")
+                    
+                    #CODEMOD: Functionality for fallback dialogue
+                    if hitPreFallbackSkill:
+                        canGoAlt = 0
+                        if each.lineTrigger == "HitWithPre" and canGoAlt == 0:
+                            for possibleOptions in each.move:
+                                if hitPreFallbackSkill.name == possibleOptions and canGoAlt == 0:
+                                    if hitPreFallbackSkill.requiresStance == "Penetration":
+                                        for stanceChek in defender.combatStance:
+                                            if stanceChek.Stance == "Sex":
+                                                canGoAlt = 1
+                                            elif stanceChek.Stance == "Anal":
+                                                canGoAlt = 1
+                                    else:
+                                        canGoAlt = 1
+
+                        if canGoAlt == 1:
+                            reactions.altText.append(each.theText[renpy.random.randint(-1, len(each.theText)-1)] + " ")
+                display += "".join(reactions.getReactions())
+                reactions.clear()
     if display != "":
         call read from _call_read_56
     $ display = ""

@@ -950,9 +950,10 @@ init python:
     #CODEMOD: New Class introduced to store which skill to use as a fallback when searching a monster's combatdialogue for reactions. Does not currently handle reactions for new sstances.
     class ReactionHandler:
 
-        def __init__(self, all="", hitWith="", escape="", playerRecoil="", onPlayerEdge="", autoCounter="", autoCounterTag="", autoCounterFetish=""):
+        def __init__(self, all="", hitWith="", hitWithPre="", escape="", playerRecoil="", onPlayerEdge="", autoCounter="", autoCounterTag="", autoCounterFetish=""):
             self.all = all
             self.hitWith = hitWith
+            self.hitWithPre = hitWithPre
             self.escape = escape
             self.playerRecoil = playerRecoil
             self.onPlayerEdge = onPlayerEdge
@@ -980,6 +981,28 @@ init python:
                 returnSkill = checkSkill("all", skillDatabase)
             
             return returnSkill
+    
+    """Custom class to be used in combatFunctions.rpy, to see whether the main skill's reactions or the delegated skills reactions should be used.
+    If there is at least 1 reaction defined for the main skill found, onlt those reactions are used. Otherwise, the delegated skill's reactions are used"""
+    class ReactionTextHolder:
+
+        def __init__(self, defaultText=[], altText=[]):
+            self.defaultText = defaultText
+            self.altText = altText
+        
+        def getReactions(self, reactionArray=None):
+            if not reactionArray:
+                reactionArray = []
+            if len(self.defaultText):
+                reactionArray.extend(self.defaultText)
+            else:
+                reactionArray.extend(self.altText)
+            
+            return reactionArray
+
+        def clear(self):
+            self.defaultText.clear()
+            self.altText.clear()
                     
     class Skill:
         def __init__(self, name="blank", costDisplay="0",  costType="ep", skillType="attack", statType="", skillTags=[], fetishTags=[],

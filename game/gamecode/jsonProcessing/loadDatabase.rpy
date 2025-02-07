@@ -209,6 +209,9 @@ label loadDatabase:
                     if "hitWith" in currentData["reactionFallback"]:
                         SkillsDatabase[additionLocation].reactions.hitWith = currentData["reactionFallback"]["hitWith"]
 
+                    if "hitWithPre" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.hitWith = currentData["reactionFallback"]["hitWithPre"]
+
                     if "escape" in currentData["reactionFallback"]:
                         SkillsDatabase[additionLocation].reactions.escape = currentData["reactionFallback"]["escape"]
                     
@@ -235,6 +238,7 @@ label loadDatabase:
                     newReactions = ReactionHandler(
                         newRactionDelegations.get("all", ""),
                         newRactionDelegations.get("hitWith", ""),
+                        newRactionDelegations.get("hitWithPre", ""),
                         newRactionDelegations.get("escape", ""),
                         newRactionDelegations.get("playerRecoil", ""),
                         newRactionDelegations.get("onPlayerEdge", ""),
