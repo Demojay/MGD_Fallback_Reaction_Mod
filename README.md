@@ -12,6 +12,7 @@ This mod has been created for [Monster Girl Dreams](https://threshold.itch.io/mo
 - PlayerRecoil/PlayerRecoilA
 - HitWith/HitWithA
 - HitWithPre
+- Escape
 
 ## Installation
 Copy the game folder included in the download into the main MGD game folder
@@ -27,6 +28,7 @@ This key will be associated with an object, which contains string/string pairs -
 The following keys are valid for the "reactionFallback" object (along with the reaction types the key refers to):
 - hitWith (HitWith)
 - hitWithPre (HitWithPre)
+- eascpe (Escape)
 - playerRecoil (PlayerRecoil/PlayerRecoilA)
 - autoCounter (AutoCounter/AutoCounterSkill)
 - autoCounterTag (AutoCounterSkillTag)
