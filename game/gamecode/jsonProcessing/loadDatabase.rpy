@@ -219,8 +219,8 @@ label loadDatabase:
                     if "playerRecoil" in currentData["reactionFallback"]:
                         SkillsDatabase[additionLocation].reactions.playerRecoil = currentData["reactionFallback"]["playerRecoil"]
                     
-                    if "onPlayerEdge" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.onPlayerEdge = currentData["reactionFallback"]["onPlayerEdge"]
+                    if "onEdge" in currentData["reactionFallback"]:
+                        SkillsDatabase[additionLocation].reactions.onPlayerEdge = currentData["reactionFallback"]["onEdge"]
                     
                     if "autoCounter" in currentData["reactionFallback"]:
                         SkillsDatabase[additionLocation].reactions.autoCounter = currentData["reactionFallback"]["autoCounter"]
@@ -242,7 +242,7 @@ label loadDatabase:
                         newRactionDelegations.get("hitWithPre", ""),
                         newRactionDelegations.get("escape", ""),
                         newRactionDelegations.get("playerRecoil", ""),
-                        newRactionDelegations.get("onPlayerEdge", ""),
+                        newRactionDelegations.get("onEdge", ""),
                         newRactionDelegations.get("autoCounter", ""),
                         newRactionDelegations.get("autoCounterTag", ""),
                         newRactionDelegations.get("autoCounterFetish", ""))

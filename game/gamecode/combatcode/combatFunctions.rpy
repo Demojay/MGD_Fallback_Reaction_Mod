@@ -1591,12 +1591,17 @@ label edgeCheck:
                 else:
                     CombatFunctionEnemytarget = LossCheck
                     CombatFunctionEnemyInitial = LossCheck
+                    edgeFallback = lastAttack.reactions.getFallbackSkill("onEdge", SkillsDatabase)
                     for orgline in orgasmArray[LossCheck].combatDialogue:
                         if orgline.lineTrigger == "OnEdge":
                             for monStance in orgasmArray[LossCheck].combatStance:
                                 showLine = 0
                                 for possibleOptions in orgline.move:
-                                    if monStance.Stance == possibleOptions:
+                                    if lastAttack.name == possibleOptions:
+                                        showLine = 1
+                                    elif edgeFallback and edgeFallback.name == possibleOptions:
+                                        showLine = 1
+                                    elif monStance.Stance == possibleOptions:
                                         showLine = 1
                                     elif possibleOptions == "":
                                         LastResortLine = orgline.theText[renpy.random.randint(-1, len(orgline.theText)-1)] + " "

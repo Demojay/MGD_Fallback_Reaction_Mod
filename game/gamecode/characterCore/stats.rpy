@@ -950,13 +950,13 @@ init python:
     #CODEMOD: New Class introduced to store which skill to use as a fallback when searching a monster's combatdialogue for reactions. Does not currently handle reactions for new sstances.
     class ReactionHandler:
 
-        def __init__(self, all="", hitWith="", hitWithPre="", escape="", playerRecoil="", onPlayerEdge="", autoCounter="", autoCounterTag="", autoCounterFetish=""):
+        def __init__(self, all="", hitWith="", hitWithPre="", escape="", playerRecoil="", onEdge="", autoCounter="", autoCounterTag="", autoCounterFetish=""):
             self.all = all
             self.hitWith = hitWith
             self.hitWithPre = hitWithPre
             self.escape = escape
             self.playerRecoil = playerRecoil
-            self.onPlayerEdge = onPlayerEdge
+            self.onEdge = onEdge
             self.autoCounter = autoCounter
             self.autoCounterTag = autoCounterTag
             self.autoCounterFetish = autoCounterFetish
