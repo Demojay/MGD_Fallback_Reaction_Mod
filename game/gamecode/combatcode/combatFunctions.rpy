@@ -1594,13 +1594,15 @@ label edgeCheck:
                     edgeFallback = lastAttack.reactions.getFallbackSkill("onEdge", SkillsDatabase)
                     for orgline in orgasmArray[LossCheck].combatDialogue:
                         if orgline.lineTrigger == "OnEdge":
+                            #CODEMOD: Alt line should be used the 1st time one is found and a reaction for the original line hasn't
+                            showLineAlt = 0
                             for monStance in orgasmArray[LossCheck].combatStance:
                                 showLine = 0
                                 for possibleOptions in orgline.move:
                                     if lastAttack.name == possibleOptions:
                                         showLine = 1
                                     elif edgeFallback and edgeFallback.name == possibleOptions:
-                                        showLine = 1
+                                        showLineAlt = 1
                                     elif monStance.Stance == possibleOptions:
                                         showLine = 1
                                     elif possibleOptions == "":
@@ -1609,6 +1611,11 @@ label edgeCheck:
                                 if lineFound == 0 and showLine == 1:
                                     display += orgline.theText[renpy.random.randint(-1, len(orgline.theText)-1)]
                                     lineFound = 1
+
+                            if lineFound == 0 and showLineAlt == 1:
+                                display += orgline.theText[renpy.random.randint(-1, len(orgline.theText)-1)]
+                                lineFound = 1
+
                             if lineFound == 1:
                                 break
                     if lineFound == 0 and LastResortLine != "":
