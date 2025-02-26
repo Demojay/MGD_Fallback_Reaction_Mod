@@ -204,32 +204,36 @@ label loadDatabase:
                                 SkillsDatabase[additionLocation].removesStance.append(each)
                     
                     #CODEMOD: Override reaction fallback skills in loaded skill
-                    if "all" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.allReaction = currentData["reactionFallback"]["all"]
-                    
-                    if "hitWith" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.hitWith = currentData["reactionFallback"]["hitWith"]
+                    if "reactionFallback" in currentData:
+                        if "all" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.allReaction = currentData["reactionFallback"]["all"]
+                        
+                        if "hitWith" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.hitWith = currentData["reactionFallback"]["hitWith"]
 
-                    if "hitWithPre" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.hitWith = currentData["reactionFallback"]["hitWithPre"]
+                        if "hitWithPre" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.hitWith = currentData["reactionFallback"]["hitWithPre"]
 
-                    if "escape" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.escape = currentData["reactionFallback"]["escape"]
-                    
-                    if "playerRecoil" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.playerRecoil = currentData["reactionFallback"]["playerRecoil"]
-                    
-                    if "onEdge" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.onPlayerEdge = currentData["reactionFallback"]["onEdge"]
-                    
-                    if "autoCounter" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.autoCounter = currentData["reactionFallback"]["autoCounter"]
+                        if "escape" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.escape = currentData["reactionFallback"]["escape"]
+                        
+                        if "playerRecoil" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.playerRecoil = currentData["reactionFallback"]["playerRecoil"]
+                        
+                        if "onEdge" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.onPlayerEdge = currentData["reactionFallback"]["onEdge"]
+                        
+                        if "autoCounter" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.autoCounter = currentData["reactionFallback"]["autoCounter"]
 
-                    if "autoCounterTag" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.autoCounterTag = currentData["reactionFallback"]["autoCounterTag"]
+                        if "autoCounterTag" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.autoCounterTag = currentData["reactionFallback"]["autoCounterTag"]
 
-                    if "autoCounterFetish" in currentData["reactionFallback"]:
-                        SkillsDatabase[additionLocation].reactions.autoCounterFetish = currentData["reactionFallback"]["autoCounterFetish"]
+                        if "autoCounterFetish" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.autoCounterFetish = currentData["reactionFallback"]["autoCounterFetish"]
+                        
+                        if "usingSkill" in currentData["reactionFallback"]:
+                            SkillsDatabase[additionLocation].reactions.usingSkill = currentData["reactionFallback"]["usingSkill"]
 
 
                 if additionLocation == None:
@@ -245,7 +249,8 @@ label loadDatabase:
                         newRactionDelegations.get("onEdge", ""),
                         newRactionDelegations.get("autoCounter", ""),
                         newRactionDelegations.get("autoCounterTag", ""),
-                        newRactionDelegations.get("autoCounterFetish", ""))
+                        newRactionDelegations.get("autoCounterFetish", ""),
+                        newRactionDelegations.get("usingSkill", ""))
 
                     blankSkill = Skill(
                     currentData["name"],
