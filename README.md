@@ -14,6 +14,8 @@ This mod has been created for [Monster Girl Dreams](https://threshold.itch.io/mo
 - HitWithPre
 - Escape
 - PlayerRecoil/PlayerRecoilA
+- OnEdge
+- IfPlayerIsUsingThisSkill
 
 ## Installation
 Copy the game folder included in the download into the main MGD game folder
@@ -35,6 +37,8 @@ The following keys are valid for the "reactionFallback" object (along with the r
 - autoCounterTag (AutoCounterSkillTag)
 - autoCounterFetish (AutoCounterSkillFetish)
 - playerRecoil (PlayerRecoil/PlayerRecoilA)
+- onEdge (OnEdge)
+- usingSkill (IfPlayerIsUsingThisSkill)
 
 \
 An addition key ("all") can also be used which will act as a catch-all delegate skill for reaction types. If an explicit reaction type has not been defined for the "reactionFallback" object,
